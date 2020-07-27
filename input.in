@@ -1,0 +1,196 @@
+TITLE
+2D simulation with Finney geometry 
+with celestite precipitation simulated using the homogeneous nucleation scenario with ssa44
+details of the simulation can be found in Deng et al., WRR, in revision 
+END
+
+
+RUNTIME
+time_units      seconds 
+timestep_max    10 
+timestep_init   1.0E-50
+correction_max  2.0
+time_tolerance      0.001
+gimrt               true
+debye-huckel        true
+screen_output       1
+database             datacom.dbs
+!database_sweep      true
+!speciate_only       true
+master              H+
+graphics        tecplot
+gimrt_solver    gmres
+gimrt_pc        bjacobi
+gimrt_pclevel   0
+solver          bcgs
+pc              ilu
+pclevel         5
+END
+ 
+OUTPUT
+time_units           seconds
+spatial_profile  1e-6 1e2 1e3 1.5e3 2e3 2.2e3 2.4e3 2.6e3 2.8e3 3e3 3.2e3 3.4e3 3.6e3 3.8e3 4e3 4.5e3 5e3
+
+END
+
+PRIMARY_SPECIES
+H+
+CO2(aq)
+Na+
+Cl-
+Sr++
+SO4--
+SiO2(aq)
+Tracer
+END
+
+
+SECONDARY_SPECIES
+HCO3-
+H2SO4(aq)
+H2SiO4--
+H4(H2SiO4)4----
+H6(H2SiO4)4--
+HCl(aq)
+HSO4-
+HSiO3-
+NaCl(aq)
+NaHSiO3(aq)
+NaOH(aq)
+NaSO4-
+OH-
+SrCl+
+SrOH+
+SrSO4(aq)
+CO3--
+NaCO3-
+NaHCO3(aq)
+SrCO3(aq)
+END
+
+
+Condition Res1
+units            mol/kgw
+temperature       25.0
+pH                charge
+CO2(aq)          CO2(g)    3.9e-4
+Na+              1.0e-20
+Cl-              1.0
+Sr++             0.5
+SO4--            1.0E-20
+Tracer           1.0
+SiO2(aq)             1.0E-20
+END
+
+Condition Res2
+units            mol/kgw
+temperature       25.0
+pH                charge
+CO2(aq)          CO2(g)    3.9e-4
+Na+              1.0
+Cl-              1.0e-20
+Sr++             1.0E-20
+SO4--            0.5
+Tracer           1.0e-20
+SiO2(aq)             1.0E-20
+END
+
+Condition Pore
+units            mol/kgw
+temperature       25.0
+pH                charge
+CO2(aq)          CO2(g)    3.9e-4
+Na+              1.0e-3
+Cl-              1.0e-3
+Sr++             1.0e-20
+SO4--            1.0E-20
+Tracer           1.0e-20
+SiO2(aq)             1.0E-20
+Quartz           1.0e-10  specific_surface_area 1.0e-20
+Celestite        0.0  specific_surface_area 44 0.0
+END
+
+
+Condition Solid
+units            mol/kgw
+temperature       25.0
+pH                charge
+CO2(aq)          CO2(g)    3.9e-4
+Na+              1.0e-3
+Cl-              1.0e-3
+Sr++             1.0e-20
+SO4--            1.0E-20
+Tracer           1.0e-20
+SiO2(aq)             1.0E-20
+Quartz           1.0  specific_surface_area 1.0e-20
+Celestite        0.0  specific_surface_area 44 0.0
+END
+
+
+
+MINERALS
+Quartz    -label default  -rate  -13.00
+Celestite        -label Marty           -rate    -7.29243
+Celestite        -label nucleatecelestite2
+END
+
+GASES
+CO2(g)
+END
+
+
+TRANSPORT
+distance_units meters
+time_units     seconds
+fix_diffusion  2.24E-9
+cementation_exponent  1.0 
+END
+
+BOUNDARY_CONDITIONS
+x_begin                   Res1         dirichlet
+x_end                     Res2         dirichlet
+y_begin                   Res2         flux
+y_end                     Res2         flux
+END
+
+INITIAL_CONDITIONS
+Solid                   1-200      1-200
+
+END
+
+POROSITY
+porosity_update            true
+minimum_porosity           1.00E-14
+read_PorosityFile          Fenny_200_200_1_10.txt
+END
+
+DISCRETIZATION
+distance_units   mm
+xzones 200 0.005
+yzones 200 0.005
+END
+
+NUCLEATION
+
+&Nucleation
+  NameMineral      = Celestite
+  label            = nucleatecelestite2
+  A_zero25C        = 1.61   
+  B_nucleation     = 1.33e-3
+  Sigma_mJm2       = 92.0
+  SSA_m2g          = 44
+  Surface          = none
+  /
+END
+
+FLOW
+distance_units             meters
+time_units                 seconds
+constant_flow              0    0
+END
+
+TEMPERATURE
+set_temperature            25.0
+RunIsothermal              true
+END
+
